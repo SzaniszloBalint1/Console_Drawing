@@ -142,29 +142,28 @@ namespace Console_Drawing
 
                             switch (menuKey.Key)
                             {
-                                case ConsoleKey.UpArrow:
-                                    var choose = Console.ReadKey(true);
-
-                                    switch (choose.Key)
+                               case ConsoleKey.UpArrow:
+                                    for(int i = 0; i <directionY; i++)
+                                    if (directionY==0)
                                     {
-                                        
+                                        Szerkeztes();
+                                        Console.ForegroundColor= ConsoleColor.Yellow;
                                     }
                                    
-                                    var colorKey = Console.ReadKey(true);
-                                    switch (colorKey.Key)
+                                    if(directionY==1)
                                     {
-                                        case ConsoleKey.D1:
-                                            currentColor = ConsoleColor.White;
-                                            break;
-                                        case ConsoleKey.D2:
-                                            currentColor = ConsoleColor.Red;
-                                            break;
-                                        case ConsoleKey.D3:
-                                            currentColor = ConsoleColor.Blue;
-                                            break;
-                                        case ConsoleKey.D4:
-                                            currentColor = ConsoleColor.Green;
-                                            break;
+                                        Letrehozas();
+                                        Console.ForegroundColor = ConsoleColor.Green;
+                                        directionY++;
+                                    }
+                                    break;
+
+                                    case ConsoleKey.DownArrow:
+                                    if (directionY == 1)
+                                    {
+                                        directionY--;
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Szerkeztes() ;
                                     }
                                     break;
                             }
