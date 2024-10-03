@@ -1,55 +1,50 @@
-﻿namespace Console_Drawing
+﻿using System.Drawing;
+
+namespace Console_Drawing
 {
     internal class Program
     {
-        static void DrawMenu()
+        static void Letrehozas()
         {
-            int menuWidth = 50;
-            int menuHeight = 13;
+            int menuWidth = 30;
+            int menuHeight = 1;
             int x = (Console.WindowWidth - menuWidth) / 2;
             int y = (Console.WindowHeight - menuHeight) / 2;
 
-            DrawBox(x, y, menuWidth, menuHeight);
-            CenterText(y + 1, "Menü:", menuWidth, x);
-
-            DrawButtonWithBox(x + 3, y + 3, "[1] Karakter módosítása (█, ▓, ▒, ░)");
-            DrawButtonWithBox(x + 3, y + 6, "[2] Szín módosítása (Fehér, Piros, Kék, Zöld)");
-            DrawButtonWithBox(x + 3, y + 9, "[3] Törlés");
-            DrawButtonWithBox(x + 3, y + 12, "[4] Vissza a játékhoz");
+            DrawBox(x, y-8, menuWidth, menuHeight);
+            CenterText(y -7, "Létrehozás:", menuWidth, x);
         }
-
-        static void DrawCharacterSelection()
+        static void Szerkeztes()
         {
-            int menuWidth = 50;
-            int menuHeight = 13;
+            int menuWidth = 30;
+            int menuHeight = 1;
             int x = (Console.WindowWidth - menuWidth) / 2;
             int y = (Console.WindowHeight - menuHeight) / 2;
 
-            Console.Clear();
-            DrawBox(x, y, menuWidth, menuHeight);
-            CenterText(y + 1, "Válaszd ki a karaktert (1-4):", menuWidth, x);
-
-            DrawButtonWithBox(x + 3, y + 3, "[1] █");
-            DrawButtonWithBox(x + 3, y + 6, "[2] ▓");
-            DrawButtonWithBox(x + 3, y + 9, "[3] ▒");
-            DrawButtonWithBox(x + 3, y + 12, "[4] ░");
+            DrawBox(x, y-3, menuWidth, menuHeight);
+            CenterText(y-2, "Szerkesztés:", menuWidth, x);
+           
         }
-
-        static void DrawColorSelection()
+        static void Torles()
         {
-            int menuWidth = 50;
-            int menuHeight = 13;
+            int menuWidth = 30;
+            int menuHeight = 1;
             int x = (Console.WindowWidth - menuWidth) / 2;
             int y = (Console.WindowHeight - menuHeight) / 2;
 
-            Console.Clear();
-            DrawBox(x, y, menuWidth, menuHeight);
-            CenterText(y + 1, "Válaszd ki a színt (1-4):", menuWidth, x);
+            DrawBox(x, y+2 , menuWidth, menuHeight);
+            CenterText(y + 3, "Törlés:", menuWidth, x);
+        }
+        static void Kilepes()
+        {
+            int menuWidth = 30;
+            int menuHeight = 1;
+            int x = (Console.WindowWidth - menuWidth) / 2;
+            int y = (Console.WindowHeight - menuHeight) / 2;
 
-            DrawButtonWithBox(x + 3, y + 3, "[1] Fehér");
-            DrawButtonWithBox(x + 3, y + 6, "[2] Piros");
-            DrawButtonWithBox(x + 3, y + 9, "[3] Kék");
-            DrawButtonWithBox(x + 3, y + 12, "[4] Zöld");
+            DrawBox(x, y+7 , menuWidth, menuHeight);
+            CenterText(y+8, "Kilepes:", menuWidth, x);
+            
         }
 
         static void DrawBox(int x, int y, int width, int height)
@@ -67,42 +62,15 @@
             Console.Write("└" + new string('─', width) + "┘");
         }
 
-        static void DrawButtonWithBox(int x, int y, string label)
-        {
-            int boxWidth = label.Length + 2;
+                           
 
-
-            Console.SetCursorPosition(x - 1, y - 1);
-            Console.Write("┌" + new string('─', boxWidth) + "┐");
-
-            Console.SetCursorPosition(x - 1, y);
-            Console.Write("│");
-            Console.BackgroundColor = ConsoleColor.DarkGray;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.Write(" " + label + " ");
-            Console.ResetColor();
-            Console.Write("│");
-
-            Console.SetCursorPosition(x - 1, y + 1);
-            Console.Write("└" + new string('─', boxWidth) + "┘");
-        }
-
-        static void DrawMessage(string message)
-        {
-            int messageWidth = 50;
-            int x = (Console.WindowWidth - messageWidth) / 2;
-            int y = (Console.WindowHeight - 5) / 2;
-
-            DrawBox(x, y, messageWidth, 3);
-            CenterText(y + 1, message, messageWidth, x);
-            Console.ReadKey(true);
-        }
 
         static void CenterText(int y, string text, int containerWidth, int containerX)
         {
             int textX = containerX + (containerWidth - text.Length) / 2;
             Console.SetCursorPosition(textX, y);
             Console.Write(text);
+            
         }
         static void Main()
         {
@@ -166,34 +134,22 @@
                         while (inMenu)
                         {
                             Console.Clear();
-                            DrawMenu();
-
+                            Letrehozas();
+                            Szerkeztes();
+                            Torles();
+                            Kilepes();
                             var menuKey = Console.ReadKey(true);
 
                             switch (menuKey.Key)
                             {
-                                case ConsoleKey.D1:
-                                    DrawCharacterSelection();
-                                    var charKey = Console.ReadKey(true);
-                                    switch (charKey.Key)
-                                    {
-                                        case ConsoleKey.D1:
-                                            currentChar = '█';
-                                            break;
-                                        case ConsoleKey.D2:
-                                            currentChar = '▓';
-                                            break;
-                                        case ConsoleKey.D3:
-                                            currentChar = '▒';
-                                            break;
-                                        case ConsoleKey.D4:
-                                            currentChar = '░';
-                                            break;
-                                    }
-                                    break;
+                                case ConsoleKey.UpArrow:
+                                    var choose = Console.ReadKey(true);
 
-                                case ConsoleKey.D2:
-                                    DrawColorSelection();
+                                    switch (choose.Key)
+                                    {
+                                        
+                                    }
+                                   
                                     var colorKey = Console.ReadKey(true);
                                     switch (colorKey.Key)
                                     {
@@ -210,15 +166,6 @@
                                             currentColor = ConsoleColor.Green;
                                             break;
                                     }
-                                    break;
-
-                                case ConsoleKey.D3:
-                                    Console.Clear();
-                                    DrawMessage("A pálya törölve.");
-                                    break;
-
-                                case ConsoleKey.D4:
-                                    inMenu = false;
                                     break;
                             }
                         }
