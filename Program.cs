@@ -9,6 +9,7 @@ namespace Console_Drawing
         static ConsoleColor selectedColor = ConsoleColor.White;
         static List<string> savedWorks = new List<string>();
         static int workCounter = 0;
+        static int currentEditingIndex = -1;
 
         static void DrawMenu(int selected)
         {
@@ -39,7 +40,6 @@ namespace Console_Drawing
 
             Console.ResetColor();
         }
-
         static void UpdateMenuSelection(int previous, int current)
         {
             string[] options = { "Létrehozás", "Szerkesztés", "Törlés", "Kilépés" };
@@ -70,11 +70,11 @@ namespace Console_Drawing
         {
             switch (selected)
             {
-                case 1: 
+                case 1:
                     CreateDrawing();
                     break;
 
-                case 2: 
+                case 2:
                     EditDrawing();
                     break;
 
@@ -82,7 +82,7 @@ namespace Console_Drawing
                     DeleteDrawing();
                     break;
 
-                case 4: 
+                case 4:
                     Console.WriteLine("Kilépés kiválasztva.");
                     Environment.Exit(0);
                     break;
@@ -96,7 +96,8 @@ namespace Console_Drawing
             Console.Clear();
             Console.CursorVisible = false;
 
-            
+            currentEditingIndex = -1;  
+
             Console.WriteLine("Válassz karaktert: █, ▓, ▒, ░");
             Console.WriteLine("[1] █ ");
             Console.WriteLine("[2] ▓ ");
@@ -119,7 +120,6 @@ namespace Console_Drawing
                     break;
             }
 
-          
             Console.WriteLine("Válassz színt: Piros, Zöld, Kék");
             Console.WriteLine("[1] Piros");
             Console.WriteLine("[2] Zöld");
@@ -138,11 +138,40 @@ namespace Console_Drawing
                     break;
             }
 
-         
             Console.Clear();
-            Console.WriteLine("Rajzolás folyamatban. Nyomd meg az ESC-et a mentéshez.");
+            int frameWidth = 120;
+            int frameHeight = 30;
+
+            GameBox(frameWidth, frameHeight);
+            Keret(frameWidth, frameHeight);
             DrawInConsole();
         }
+
+        static void GameBox(int frameWidth, int frameHeight)
+        {
+            int windowheight = frameHeight;
+            int windowwidth = frameWidth;
+            if (windowheight <= Console.LargestWindowHeight && windowwidth <= Console.LargestWindowWidth)
+            {
+                Console.SetBufferSize(windowwidth, windowheight);
+                Console.SetWindowSize(windowwidth, windowheight);
+            }
+        }
+        static void Keret(int width, int height)
+        {
+            Console.SetCursorPosition(0, 0);
+            Console.Write("┌" + new string('─', width - 2) + "┐");
+
+            for (int i = 1; i < height - 1; i++)
+            {
+                Console.SetCursorPosition(0, i);
+                Console.Write("│" + new string(' ', width - 2) + "│");
+            }
+
+            Console.SetCursorPosition(0, height - 1);
+            Console.Write("└" + new string('─', width - 2) + "┘");
+        }
+
 
         static void DrawInConsole()
         {
@@ -153,7 +182,7 @@ namespace Console_Drawing
 
             while (drawing)
             {
-                Console.SetCursorPosition(0, 0);
+                Console.SetCursorPosition(1, 1);
                 Console.Write($"X: {cursorX}, Y: {cursorY}, Karakter: {selectedChar}, Szín: {selectedColor}");
                 Console.WriteLine();
 
@@ -189,12 +218,20 @@ namespace Console_Drawing
             }
             Console.Clear();
         }
-
         static void SaveDrawing(string drawingData)
         {
-            savedWorks.Add(drawingData);
-            workCounter++;
-            Console.WriteLine($"Munka mentve! [{workCounter}]");
+            if (currentEditingIndex == -1)
+            {
+                savedWorks.Add(drawingData);  
+                workCounter++;
+                Console.WriteLine($"Munka mentve! [{workCounter}]");
+            }
+            else
+            {
+                savedWorks[currentEditingIndex] = drawingData;  
+                Console.WriteLine($"Munka frissítve! [{currentEditingIndex + 1}]");
+            }
+
             Console.WriteLine("Nyomj meg egy ESC-et a kilépéshez.");
             while (Console.ReadKey(true).Key != ConsoleKey.Escape) { }
         }
@@ -202,75 +239,123 @@ namespace Console_Drawing
         static void EditDrawing()
         {
             Console.Clear();
-            Console.WriteLine("Szerkesztés:");
-            for (int i = 0; i < savedWorks.Count; i++)
+            if (savedWorks.Count == 0)
             {
-                Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                Console.WriteLine("Nincs elmentett munka szerkesztéshez.");
+                return;
             }
-            Console.WriteLine("[ESC] Vissza");
 
-            var key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.Escape) return;
+            Console.WriteLine("Válassz egy munkát a szerkesztéshez:");
+            int selectedWorkIndex = 0;
+            bool editing = true;
 
-            if (int.TryParse(key.KeyChar.ToString(), out int selectedWork) && selectedWork > 0 && selectedWork <= savedWorks.Count)
+            while (editing)
             {
-                string selectedDrawing = savedWorks[selectedWork - 1];
-                ContinueDrawing(selectedDrawing);
+                Console.Clear();
+                for (int i = 0; i < savedWorks.Count; i++)
+                {
+                    if (i == selectedWorkIndex)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Gray;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                    }
+                    else
+                    {
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                }
+                Console.ResetColor();
+                Console.WriteLine("[ESC] Vissza");
+
+                var key = Console.ReadKey(true);
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedWorkIndex = (selectedWorkIndex - 1 + savedWorks.Count) % savedWorks.Count;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selectedWorkIndex = (selectedWorkIndex + 1) % savedWorks.Count;
+                        break;
+                    case ConsoleKey.Enter:
+                        string selectedDrawing = savedWorks[selectedWorkIndex];
+                        currentEditingIndex = selectedWorkIndex;  // Elmentjük az aktuális szerkesztés indexét
+                        ContinueDrawing(selectedDrawing);
+                        editing = false;
+                        break;
+                    case ConsoleKey.Escape:
+                        editing = false;
+                        break;
+                }
             }
         }
 
         static void ContinueDrawing(string drawingData)
         {
             Console.Clear();
-            Console.CursorVisible = false;
-
-           
-            var drawingInstructions = drawingData.Split(new[] { ']' }, StringSplitOptions.RemoveEmptyEntries);
-            int cursorX = Console.WindowWidth / 2, cursorY = Console.WindowHeight / 2;
-
-       
-            foreach (var instruction in drawingInstructions)
-            {
-                if (string.IsNullOrWhiteSpace(instruction)) continue;
-
-             
-                var parts = instruction.Trim('[', ' ').Split(',');
-                if (parts.Length == 4 &&
-                    int.TryParse(parts[0], out int x) &&
-                    int.TryParse(parts[1], out int y) &&
-                    char.TryParse(parts[2], out char character) &&
-                    int.TryParse(parts[3], out int colorCode))
-                {
-                    Console.SetCursorPosition(x, y);
-                    Console.ForegroundColor = (ConsoleColor)colorCode;
-                    Console.Write(character);
-                }
-            }
-
-            Console.ResetColor();
-           
+            Console.WriteLine($"Rajz folytatása [{currentEditingIndex + 1}]");
             DrawInConsole();
         }
 
         static void DeleteDrawing()
         {
             Console.Clear();
-            Console.WriteLine("Törlés:");
-            for (int i = 0; i < savedWorks.Count; i++)
+            if (savedWorks.Count == 0)
             {
-                Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                Console.WriteLine("Nincs elmentett munka törléshez.");
+                return;
             }
-            Console.WriteLine("Válassz egy munka törléséhez, vagy nyomj ESC-t a visszalépéshez.");
 
-            var key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.Escape) return;
+            Console.WriteLine("Válassz egy munkát a törléshez:");
+            int selectedWorkIndex = 0;
+            bool deleting = true;
 
-            if (int.TryParse(key.KeyChar.ToString(), out int selectedWork) && selectedWork > 0 && selectedWork <= savedWorks.Count)
+            while (deleting)
             {
-                savedWorks.RemoveAt(selectedWork - 1);
-                Console.WriteLine($"Munka {selectedWork} törölve.");
+                Console.Clear();
+                for (int i = 0; i < savedWorks.Count; i++)
+                {
+                    if (i == selectedWorkIndex)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Gray;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                    }
+                    else
+                    {
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                }
+                Console.ResetColor();
+                Console.WriteLine("[ESC] Vissza");
+
+                var key = Console.ReadKey(true);
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedWorkIndex = (selectedWorkIndex - 1 + savedWorks.Count) % savedWorks.Count;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selectedWorkIndex = (selectedWorkIndex + 1) % savedWorks.Count;
+                        break;
+                    case ConsoleKey.Enter:
+                        savedWorks.RemoveAt(selectedWorkIndex);
+                        Console.WriteLine($"Munka {selectedWorkIndex + 1} törölve.");
+                        deleting = false;
+                        break;
+                    case ConsoleKey.Escape:
+                        deleting = false;
+                        break;
+                }
             }
         }
+
+
+
 
         static void DrawBox(int x, int y, int width, int height)
         {
