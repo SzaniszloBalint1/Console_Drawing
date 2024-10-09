@@ -16,23 +16,29 @@ namespace Console_Drawing
             int x = (Console.WindowWidth - menuWidth) / 2;
             int y = (Console.WindowHeight - menuHeight) / 2 - 8;
 
-         
             for (int i = 0; i < options.Length; i++)
             {
                 int currentY = y + i * 5;
-                DrawBox(x, currentY, menuWidth, menuHeight);
+
+               
                 if (i + 1 == selected)
                 {
-                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.ForegroundColor = ConsoleColor.Black;
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.White; 
                 }
+
+                DrawBox(x, currentY, menuWidth, menuHeight); 
+
+                
                 CenterText(currentY + 1, options[i] + ":", menuWidth, x);
             }
 
-            Console.ResetColor(); 
+            Console.ResetColor();
         }
 
         static void UpdateMenuSelection(int previous, int current)
@@ -43,20 +49,22 @@ namespace Console_Drawing
             int x = (Console.WindowWidth - menuWidth) / 2;
             int y = (Console.WindowHeight - menuHeight) / 2 - 8;
 
-       
+            
             if (previous > 0)
             {
                 int previousY = y + (previous - 1) * 5;
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.BackgroundColor = ConsoleColor.Black;
-                CenterText(previousY + 1, options[previous - 1] + ":", menuWidth, x);
+                Console.BackgroundColor = ConsoleColor.Black; 
+                Console.ForegroundColor = ConsoleColor.White; 
+                DrawBox(x, previousY, menuWidth, menuHeight); 
+                CenterText(previousY + 1, options[previous - 1] + ":", menuWidth, x); 
             }
 
-          
+       
             int currentY = y + (current - 1) * 5;
+            Console.BackgroundColor = ConsoleColor.Gray; 
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.BackgroundColor = ConsoleColor.Gray;
-            CenterText(currentY + 1, options[current - 1] + ":", menuWidth, x);
+            DrawBox(x, currentY, menuWidth, menuHeight);
+            CenterText(currentY + 1, options[current - 1] + ":", menuWidth, x); 
 
             Console.ResetColor(); 
         }
@@ -64,7 +72,6 @@ namespace Console_Drawing
         static void ExecuteOption(int selected)
         {
             int cursorX = Console.WindowWidth / 2, cursorY = Console.WindowHeight / 2;
-            int directionX = 0, directionY = 0;
             char currentChar = selectedChar;
             ConsoleColor currentColor = selectedColor;
             Console.Clear();
@@ -73,7 +80,8 @@ namespace Console_Drawing
             switch (selected)
             {
                 case 1:
-                   
+                 
+
                     Console.Clear();
                     Console.CursorVisible = false;
 
@@ -100,7 +108,7 @@ namespace Console_Drawing
                                 break;
 
                             case ConsoleKey.LeftArrow:
-                                if (cursorX > 0) cursorX--;
+                                if (cursorX > 0) cursorX--; 
                                 break;
 
                             case ConsoleKey.RightArrow:
@@ -108,7 +116,6 @@ namespace Console_Drawing
                                 break;
 
                             case ConsoleKey.Spacebar:
-                               
                                 Console.SetCursorPosition(cursorX, cursorY);
                                 Console.ForegroundColor = currentColor;
                                 Console.Write(currentChar);
@@ -116,11 +123,11 @@ namespace Console_Drawing
                                 break;
                         }
 
-                        
+                     
                         Console.SetCursorPosition(cursorX, cursorY);
                     }
 
-                    
+                  
                     Console.ResetColor();
                     break;
 
@@ -176,7 +183,7 @@ namespace Console_Drawing
                 case 3:
                     selectedChar = '█';
                     selectedColor = ConsoleColor.White;
-                    settingsSaved = false; 
+                    settingsSaved = false;  
                     Console.WriteLine("Beállítások törölve.");
                     break;
 
@@ -228,18 +235,12 @@ namespace Console_Drawing
                     case ConsoleKey.UpArrow:
                         previousSelection = currentSelection;
                         currentSelection--;
-                        if (currentSelection < 1)
-                        {
-                            currentSelection = 4;
-                        }
+                        if (currentSelection < 1) currentSelection = 4; 
                         break;
                     case ConsoleKey.DownArrow:
                         previousSelection = currentSelection;
                         currentSelection++;
-                        if (currentSelection > 4)
-                        {
-                            currentSelection = 1;
-                        }
+                        if (currentSelection > 4) currentSelection = 1; 
                         break;
                     case ConsoleKey.Enter:
                         ExecuteOption(currentSelection);
