@@ -40,6 +40,56 @@ namespace Console_Drawing
             Console.ResetColor();
         }
 
+        static void DeleteSelect(int selected)
+        {
+            int menuWidth = 30;
+            int menuHeight = 1;
+            int x = (Console.WindowWidth - menuWidth) / 2;
+            int y = (Console.WindowHeight - menuHeight) / 2 - 8;
+
+            for (int i = 0; i < savedWorks.Count; i++)
+            {
+                int currentY = y + i * 5;
+
+                if (i + 1 == selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                }
+                else
+                {
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                CenterText(currentY + 1, savedWorks[i], menuWidth, x);
+            }
+
+            Console.ResetColor();
+        }
+        static void DeleteMenuSelection(int previous, int current)
+        {
+            
+            int menuWidth = 30;
+            int menuHeight = 1;
+            int x = (Console.WindowWidth - menuWidth) / 2;
+            int y = (Console.WindowHeight - menuHeight) / 2 - 8;
+
+            if (previous > 0)
+            {
+                int previousY = y + (previous - 1) * 5;
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.ForegroundColor = ConsoleColor.White;
+                CenterText(previousY + 1, savedWorks[previous - 1] + ":", menuWidth, x);
+            }
+
+            int currentY = y + (current - 1) * 5;
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            CenterText(currentY + 1, savedWorks[current - 1] + ":", menuWidth, x);
+
+            Console.ResetColor();
+        }
+
         static void UpdateMenuSelection(int previous, int current)
         {
             string[] options = { "Létrehozás", "Szerkesztés", "Törlés", "Kilépés" };
@@ -79,7 +129,7 @@ namespace Console_Drawing
                     break;
 
                 case 3:
-                    DeleteDrawing();
+                    DeleteDrawing(10);
                     break;
 
                 case 4: 
@@ -226,7 +276,7 @@ namespace Console_Drawing
 
            
             var drawingInstructions = drawingData.Split(new[] { ']' }, StringSplitOptions.RemoveEmptyEntries);
-            int cursorX = Console.WindowWidth / 2, cursorY = Console.WindowHeight / 2;
+       
 
        
             foreach (var instruction in drawingInstructions)
@@ -252,21 +302,68 @@ namespace Console_Drawing
             DrawInConsole();
         }
 
-        static void DeleteDrawing()
+        static void DeleteDrawing(int selected)
         {
             Console.Clear();
             Console.WriteLine("Törlés:");
+            Console.CursorVisible = false;
+            int currentSelection = 1;
+            int previousSelection = -1;
+           DeleteSelect(currentSelection);  
+            var keyinfo=Console.ReadKey(true).Key;
             for (int i = 0; i < savedWorks.Count; i++)
             {
-                Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+
+                if (i + 1 == selected)
+                {
+                    Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                }
+                else
+                {
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            }
+
+            Console.ResetColor();
+            for (int i = 0; i < savedWorks.Count; i++)
+            {
+                switch (keyinfo)
+                {
+
+                    case ConsoleKey.UpArrow:
+                        previousSelection = currentSelection;
+                        currentSelection--;
+                        if (currentSelection < 1) currentSelection = 4;
+                        Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                        break;
+
+                    case ConsoleKey.DownArrow:
+                        previousSelection = currentSelection;
+                        currentSelection++;
+                        if (currentSelection > 1) currentSelection = 1;
+                        Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                        break;
+
+
+                }
+                if (currentSelection != previousSelection)
+                {
+                    DeleteMenuSelection(previousSelection, currentSelection);
+                }
+
+
             }
             Console.WriteLine("Válassz egy munka törléséhez, vagy nyomj ESC-t a visszalépéshez.");
 
+            
             var key = Console.ReadKey(true);
             if (key.Key == ConsoleKey.Escape) return;
-
+         
             if (int.TryParse(key.KeyChar.ToString(), out int selectedWork) && selectedWork > 0 && selectedWork <= savedWorks.Count)
             {
+
                 savedWorks.RemoveAt(selectedWork - 1);
                 Console.WriteLine($"Munka {selectedWork} törölve.");
             }
