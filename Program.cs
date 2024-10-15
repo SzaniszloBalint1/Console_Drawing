@@ -10,7 +10,7 @@ namespace Console_Drawing
         static List<string> savedWorks = new List<string>();
         static int workCounter = 0;
         static int currentEditingIndex = -1;
-
+        
         static void DrawMenu(int selected)
         {
             string[] options = { "Létrehozás", "Szerkesztés", "Törlés", "Kilépés" };
@@ -174,66 +174,20 @@ namespace Console_Drawing
             Console.Write("└" + new string('─', width - 2) + "┘");
         }
 
-        static void DrawInConsole()
-        {
-            int cursorX = Console.WindowWidth / 2, cursorY = Console.WindowHeight / 2;
-            Console.CursorVisible = false;
-            bool drawing = true;
-            StringBuilder currentDrawing = new StringBuilder();
-
-            while (drawing)
-            {
-                Console.SetCursorPosition(1, 1);
-                Console.Write($"X: {cursorX}, Y: {cursorY}, Karakter: {selectedChar}, Szín: {selectedColor}");
-                Console.WriteLine();
-
-                var keyinfo = Console.ReadKey(true);
-                switch (keyinfo.Key)
-                {
-                    case ConsoleKey.Escape:
-                        SaveDrawing(currentDrawing.ToString());
-                        drawing = false;
-                        break;
-                    case ConsoleKey.UpArrow:
-                        if (cursorY > 0) cursorY--;
-                        break;
-                    case ConsoleKey.DownArrow:
-                        if (cursorY < Console.WindowHeight - 1) cursorY++;
-                        break;
-                    case ConsoleKey.LeftArrow:
-                        if (cursorX > 0) cursorX--;
-                        break;
-                    case ConsoleKey.RightArrow:
-                        if (cursorX < Console.WindowWidth - 1) cursorX++;
-                        break;
-                    case ConsoleKey.Spacebar:
-                        Console.SetCursorPosition(cursorX, cursorY);
-                        Console.ForegroundColor = selectedColor;
-                        Console.Write(selectedChar);
-                        Console.ResetColor();
-                        currentDrawing.Append($"[{cursorX},{cursorY},{selectedChar},{(int)selectedColor}]");
-                        break;
-                }
-
-                Console.SetCursorPosition(cursorX, cursorY);
-            }
-            Console.Clear();
-        }
 
         static void SaveDrawing(string drawingData)
         {
             if (currentEditingIndex == -1)
             {
-                savedWorks.Add(drawingData);  
+                savedWorks.Add(drawingData);
                 workCounter++;
                 Console.WriteLine($"Munka mentve! [{workCounter}]");
             }
             else
             {
-                savedWorks[currentEditingIndex] = drawingData; 
+                savedWorks[currentEditingIndex] = drawingData;
                 Console.WriteLine($"Munka frissítve! [{currentEditingIndex + 1}]");
             }
-
             Console.WriteLine("Nyomj meg egy ESC-et a kilépéshez.");
             while (Console.ReadKey(true).Key != ConsoleKey.Escape) { }
         }
@@ -269,6 +223,7 @@ namespace Console_Drawing
 
                     Console.WriteLine($"[{i + 1}] Munka {i + 1}");
                 }
+
                 Console.ResetColor();
                 Console.WriteLine("[ESC] Vissza");
 
@@ -318,9 +273,78 @@ namespace Console_Drawing
         {
             Console.Clear();
             Console.WriteLine($"Rajz folytatása [{currentEditingIndex + 1}]");
+            Keret(Console.WindowWidth, Console.WindowHeight);
+
+            var drawing = drawingData.Split(']');
+            foreach (var item in drawing)
+            {
+                if (!string.IsNullOrEmpty(item))
+                {
+                    var details = item.Trim('[', ' ').Split(',');
+                    int x = int.Parse(details[0]);
+                    int y = int.Parse(details[1]);
+                    char character = char.Parse(details[2]);
+
+                    Console.SetCursorPosition(x, y);
+                    Console.ForegroundColor = selectedColor;
+                    Console.Write(character);
+                }
+            }
+
             DrawInConsole();
         }
 
+        static void DrawInConsole(int cursorX = -1, int cursorY = -1)
+        {
+            if (cursorX == -1 || cursorY == -1)
+            {
+                cursorX = Console.WindowWidth / 2;
+                cursorY = Console.WindowHeight / 2;
+            }
+            Console.SetCursorPosition(cursorX, cursorY);
+            Console.CursorVisible = false;
+            bool drawing = true;
+            StringBuilder currentDrawing = new StringBuilder();
+
+            while (drawing)
+            {
+                Console.SetCursorPosition(1, 1);
+                Console.Write($"X: {cursorX}, Y: {cursorY}, Karakter: {selectedChar}, Szín: {selectedColor}");
+                Console.WriteLine();
+
+                var keyinfo = Console.ReadKey(true);
+                switch (keyinfo.Key)
+                {
+                    case ConsoleKey.Escape:
+                        SaveDrawing(currentDrawing.ToString());
+                        drawing = false;
+                        break;
+                    case ConsoleKey.UpArrow:
+                        if (cursorY > 1) cursorY--;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        if (cursorY < Console.WindowHeight - 2) cursorY++;
+                        break;
+                    case ConsoleKey.LeftArrow:
+                        if (cursorX > 1) cursorX--;
+                        break;
+                    case ConsoleKey.RightArrow:
+                        if (cursorX < Console.WindowWidth - 2) cursorX++;
+                        break;
+                    case ConsoleKey.Spacebar:
+                        Console.SetCursorPosition(cursorX, cursorY);
+                        Console.ForegroundColor = selectedColor;
+                        Console.Write(selectedChar);
+                        Console.ResetColor();
+                        currentDrawing.Append($"[{cursorX},{cursorY},{selectedChar}]");
+                        break;
+                }
+
+                Console.SetCursorPosition(cursorX, cursorY);
+            }
+
+            Console.Clear();
+        }
         static void DeleteDrawing()
         {
             Console.Clear();
