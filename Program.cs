@@ -9,7 +9,7 @@ namespace Console_Drawing
         static ConsoleColor selectedColor = ConsoleColor.White;
         static List<string> savedWorks = new List<string>();
         static int workCounter = 0;
-        static int currentEditingIndex = -1; // Az aktuálisan szerkesztett rajz indexe
+        static int currentEditingIndex = -1;
 
         static void DrawMenu(int selected)
         {
@@ -35,7 +35,7 @@ namespace Console_Drawing
                 }
 
                 DrawBox(x, currentY, menuWidth, menuHeight);
-                CenterText(currentY + 1, options[i] + ":", menuWidth, x);
+                CenterText(currentY + 1, options[i], menuWidth, x);
             }
 
             Console.ResetColor();
@@ -55,14 +55,14 @@ namespace Console_Drawing
                 Console.BackgroundColor = ConsoleColor.Black;
                 Console.ForegroundColor = ConsoleColor.White;
                 DrawBox(x, previousY, menuWidth, menuHeight);
-                CenterText(previousY + 1, options[previous - 1] + ":", menuWidth, x);
+                CenterText(previousY + 1, options[previous - 1], menuWidth, x);
             }
 
             int currentY = y + (current - 1) * 5;
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
             DrawBox(x, currentY, menuWidth, menuHeight);
-            CenterText(currentY + 1, options[current - 1] + ":", menuWidth, x);
+            CenterText(currentY + 1, options[current - 1], menuWidth, x);
 
             Console.ResetColor();
         }
@@ -97,7 +97,7 @@ namespace Console_Drawing
             Console.Clear();
             Console.CursorVisible = false;
 
-            currentEditingIndex = -1;  // Új rajz készítésekor nincs aktív szerkesztés
+            currentEditingIndex = -1;  
 
             Console.WriteLine("Válassz karaktert: █, ▓, ▒, ░");
             Console.WriteLine("[1] █ ");
@@ -224,13 +224,13 @@ namespace Console_Drawing
         {
             if (currentEditingIndex == -1)
             {
-                savedWorks.Add(drawingData);  // Új rajz esetén hozzáadjuk a listához
+                savedWorks.Add(drawingData);  
                 workCounter++;
                 Console.WriteLine($"Munka mentve! [{workCounter}]");
             }
             else
             {
-                savedWorks[currentEditingIndex] = drawingData;  // Meglévő rajz szerkesztésekor felülírjuk
+                savedWorks[currentEditingIndex] = drawingData; 
                 Console.WriteLine($"Munka frissítve! [{currentEditingIndex + 1}]");
             }
 
@@ -283,7 +283,7 @@ namespace Console_Drawing
                         break;
                     case ConsoleKey.Enter:
                         string selectedDrawing = savedWorks[selectedWorkIndex];
-                        currentEditingIndex = selectedWorkIndex;  // Elmentjük az aktuális szerkesztés indexét
+                        currentEditingIndex = selectedWorkIndex; 
                         ContinueDrawing(selectedDrawing);
                         editing = false;
                         break;
