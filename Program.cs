@@ -9,7 +9,7 @@ namespace Console_Drawing
         static ConsoleColor selectedColor = ConsoleColor.White;
         static List<string> savedWorks = new List<string>();
         static int workCounter = 0;
-        static int currentEditingIndex = -1;
+        static int currentEditingIndex = -1; // Az aktuálisan szerkesztett rajz indexe
 
         static void DrawMenu(int selected)
         {
@@ -80,7 +80,7 @@ namespace Console_Drawing
                     break;
 
                 case 3:
-                    DeleteDrawing(10);
+                    DeleteDrawing();
                     break;
 
                 case 4:
@@ -97,7 +97,7 @@ namespace Console_Drawing
             Console.Clear();
             Console.CursorVisible = false;
 
-            currentEditingIndex = -1;  
+            currentEditingIndex = -1;  // Új rajz készítésekor nincs aktív szerkesztés
 
             Console.WriteLine("Válassz karaktert: █, ▓, ▒, ░");
             Console.WriteLine("[1] █ ");
@@ -158,6 +158,7 @@ namespace Console_Drawing
                 Console.SetWindowSize(windowwidth, windowheight);
             }
         }
+
         static void Keret(int width, int height)
         {
             Console.SetCursorPosition(0, 0);
@@ -172,7 +173,6 @@ namespace Console_Drawing
             Console.SetCursorPosition(0, height - 1);
             Console.Write("└" + new string('─', width - 2) + "┘");
         }
-
 
         static void DrawInConsole()
         {
@@ -219,17 +219,18 @@ namespace Console_Drawing
             }
             Console.Clear();
         }
+
         static void SaveDrawing(string drawingData)
         {
             if (currentEditingIndex == -1)
             {
-                savedWorks.Add(drawingData);  
+                savedWorks.Add(drawingData);  // Új rajz esetén hozzáadjuk a listához
                 workCounter++;
                 Console.WriteLine($"Munka mentve! [{workCounter}]");
             }
             else
             {
-                savedWorks[currentEditingIndex] = drawingData;  
+                savedWorks[currentEditingIndex] = drawingData;  // Meglévő rajz szerkesztésekor felülírjuk
                 Console.WriteLine($"Munka frissítve! [{currentEditingIndex + 1}]");
             }
 
@@ -292,62 +293,6 @@ namespace Console_Drawing
                 }
             }
         }
-
-        static void ContinueDrawing(string drawingData)
-        {
-            Console.Clear();
-            Console.CursorVisible = false;
-
-           
-            var drawingInstructions = drawingData.Split(new[] { ']' }, StringSplitOptions.RemoveEmptyEntries);
-            int cursorX = Console.WindowWidth / 2, cursorY = Console.WindowHeight / 2;
-
-       
-            foreach (var instruction in drawingInstructions)
-            {
-                if (string.IsNullOrWhiteSpace(instruction)) continue;
-
-             
-                var parts = instruction.Trim('[', ' ').Split(',');
-                if (parts.Length == 4 &&
-                    int.TryParse(parts[0], out int x) &&
-                    int.TryParse(parts[1], out int y) &&
-                    char.TryParse(parts[2], out char character) &&
-                    int.TryParse(parts[3], out int colorCode))
-                {
-                    Console.SetCursorPosition(x, y);
-                    Console.ForegroundColor = (ConsoleColor)colorCode;
-                    Console.Write(character);
-                }
-            }
-
-            Console.WriteLine("Válassz egy munkát a törléshez:");
-            int selectedWorkIndex = 0;
-            bool deleting = true;
-
-        static void DeleteDrawing()
-        {
-            Console.Clear();
-            Console.WriteLine("Törlés:");
-            for (int i = 0; i < savedWorks.Count; i++)
-            {
-                Console.WriteLine($"[{i + 1}] Munka {i + 1}");
-            }
-            Console.WriteLine("Válassz egy munka törléséhez, vagy nyomj ESC-t a visszalépéshez.");
-
-            var key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.Escape) return;
-
-            if (int.TryParse(key.KeyChar.ToString(), out int selectedWork) && selectedWork > 0 && selectedWork <= savedWorks.Count)
-            {
-                savedWorks.RemoveAt(selectedWork - 1);
-                Console.WriteLine($"Munka {selectedWork} törölve.");
-            }
-        }
-
-
-
-
         static void DrawBox(int x, int y, int width, int height)
         {
             Console.SetCursorPosition(x, y);
@@ -368,6 +313,67 @@ namespace Console_Drawing
             int textX = containerX + (containerWidth - text.Length) / 2;
             Console.SetCursorPosition(textX, y);
             Console.Write(text);
+        }
+        static void ContinueDrawing(string drawingData)
+        {
+            Console.Clear();
+            Console.WriteLine($"Rajz folytatása [{currentEditingIndex + 1}]");
+            DrawInConsole();
+        }
+
+        static void DeleteDrawing()
+        {
+            Console.Clear();
+            if (savedWorks.Count == 0)
+            {
+                Console.WriteLine("Nincs elmentett munka törléshez.");
+                return;
+            }
+
+            Console.WriteLine("Válassz egy munkát a törléshez:");
+            int selectedWorkIndex = 0;
+            bool deleting = true;
+
+            while (deleting)
+            {
+                Console.Clear();
+                for (int i = 0; i < savedWorks.Count; i++)
+                {
+                    if (i == selectedWorkIndex)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Gray;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                    }
+                    else
+                    {
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+
+                    Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                }
+                Console.ResetColor();
+                Console.WriteLine("[ESC] Vissza");
+
+                var key = Console.ReadKey(true);
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selectedWorkIndex = (selectedWorkIndex - 1 + savedWorks.Count) % savedWorks.Count;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selectedWorkIndex = (selectedWorkIndex + 1) % savedWorks.Count;
+                        break;
+                    case ConsoleKey.Enter:
+                        savedWorks.RemoveAt(selectedWorkIndex);
+                        Console.WriteLine($"Munka {selectedWorkIndex + 1} törölve.");
+                        deleting = false;
+                        break;
+                    case ConsoleKey.Escape:
+                        deleting = false;
+                        break;
+                }
+            }
         }
 
         static void Main()
