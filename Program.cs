@@ -10,7 +10,34 @@ namespace Console_Drawing
         static List<string> savedWorks = new List<string>();
         static int workCounter = 0;
         static int currentEditingIndex = -1;
-        
+        static void LoadDrawingFromFile(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                string drawingData = File.ReadAllText(fileName);
+                ContinueDrawing(drawingData);
+            }
+            else
+            {
+                Console.WriteLine("A megadott fájl nem található.");
+            }
+        }
+        static void SaveDrawingToFile(string drawingData)
+        {
+            string fileName = $"rajz_{workCounter + 1}.txt";
+            var lines = drawingData.Split(']');
+            StringBuilder formattedDrawing = new StringBuilder();
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrEmpty(line.Trim()))  
+                {
+                    formattedDrawing.AppendLine(line.Trim() + "]");  
+                }
+            }
+            File.WriteAllText(fileName, formattedDrawing.ToString());
+            Console.WriteLine($"Rajz mentve: {fileName}");
+        }
+
         static void DrawMenu(int selected)
         {
             string[] options = { "Létrehozás", "Szerkesztés", "Törlés", "Kilépés" };
@@ -84,7 +111,6 @@ namespace Console_Drawing
                     break;
 
                 case 4:
-                    Console.WriteLine("Kilépés kiválasztva.");
                     Environment.Exit(0);
                     break;
             }
@@ -97,7 +123,7 @@ namespace Console_Drawing
             Console.Clear();
             Console.CursorVisible = false;
 
-            currentEditingIndex = -1;  
+            currentEditingIndex = -1;
 
             Console.WriteLine("Válassz karaktert: █, ▓, ▒, ░");
             Console.WriteLine("[1] █ ");
@@ -221,7 +247,7 @@ namespace Console_Drawing
                         Console.ForegroundColor = ConsoleColor.White;
                     }
 
-                    Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                    Console.WriteLine($"Munka {i + 1}");
                 }
 
                 Console.ResetColor();
@@ -238,7 +264,7 @@ namespace Console_Drawing
                         break;
                     case ConsoleKey.Enter:
                         string selectedDrawing = savedWorks[selectedWorkIndex];
-                        currentEditingIndex = selectedWorkIndex; 
+                        currentEditingIndex = selectedWorkIndex;
                         ContinueDrawing(selectedDrawing);
                         editing = false;
                         break;
@@ -316,6 +342,8 @@ namespace Console_Drawing
                 switch (keyinfo.Key)
                 {
                     case ConsoleKey.Escape:
+
+                        SaveDrawingToFile(currentDrawing.ToString());
                         SaveDrawing(currentDrawing.ToString());
                         drawing = false;
                         break;
@@ -336,6 +364,7 @@ namespace Console_Drawing
                         Console.ForegroundColor = selectedColor;
                         Console.Write(selectedChar);
                         Console.ResetColor();
+
                         currentDrawing.Append($"[{cursorX},{cursorY},{selectedChar}]");
                         break;
                 }
@@ -374,7 +403,7 @@ namespace Console_Drawing
                         Console.ForegroundColor = ConsoleColor.White;
                     }
 
-                    Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                    Console.WriteLine($"Munka {i + 1}");
                 }
                 Console.ResetColor();
                 Console.WriteLine("[ESC] Vissza");
