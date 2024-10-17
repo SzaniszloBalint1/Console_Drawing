@@ -1,16 +1,58 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using static System.Console;
-namespace Console_Drawing
-{
-    internal class Program
+internal class Program
     {
         static char selectedChar = '█';
         static ConsoleColor selectedColor = ConsoleColor.White;
         static List<string> savedWorks = new List<string>();
         static int workCounter = 0;
         static int currentEditingIndex = -1;
-        
+    static void LoadDrawingsFromDatabase()
+    {
+        using (var context = new DrawingContext())
+        {
+            
+            var drawings = context.Drawings.ToList();
+            foreach (var drawing in drawings)
+            {
+                Console.WriteLine($"Rajz {drawing.Id}: {drawing.CreatedAt}");
+            }
+        }
+    }
+    static void LoadDrawingFromFile(string fileName)
+    {
+        using (var context = new DrawingContext())
+        {
+            var drawing = context.Drawings.FirstOrDefault(d => d.Id == currentEditingIndex);
+            if (drawing != null)
+            {
+                ContinueDrawing(drawing.Data);
+            }
+            else
+            {
+                Console.WriteLine("A megadott fájl nem található.");
+            }
+        }
+    }
+    static void SaveDrawingToDatabase(string drawingData)
+        {
+            using (var context = new DrawingContext())
+            {
+                var drawing = new Drawing
+                {
+                    Data = drawingData,
+                    CreatedAt = DateTime.Now
+                };
+                context.Drawings.Add(drawing);
+                context.SaveChanges();
+                Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Id}");
+            }
+        }
         static void DrawMenu(int selected)
         {
             string[] options = { "Létrehozás", "Szerkesztés", "Törlés", "Kilépés" };
@@ -84,7 +126,6 @@ namespace Console_Drawing
                     break;
 
                 case 4:
-                    Console.WriteLine("Kilépés kiválasztva.");
                     Environment.Exit(0);
                     break;
             }
@@ -97,7 +138,7 @@ namespace Console_Drawing
             Console.Clear();
             Console.CursorVisible = false;
 
-            currentEditingIndex = -1;  
+            currentEditingIndex = -1;
 
             Console.WriteLine("Válassz karaktert: █, ▓, ▒, ░");
             Console.WriteLine("[1] █ ");
@@ -148,18 +189,20 @@ namespace Console_Drawing
             DrawInConsole();
         }
 
-        static void GameBox(int frameWidth, int frameHeight)
-        {
-            int windowheight = frameHeight;
-            int windowwidth = frameWidth;
-            if (windowheight <= Console.LargestWindowHeight && windowwidth <= Console.LargestWindowWidth)
-            {
-                Console.SetBufferSize(windowwidth, windowheight);
-                Console.SetWindowSize(windowwidth, windowheight);
-            }
-        }
+    static void GameBox(int frameWidth, int frameHeight)
+    {
+        int windowheight = frameHeight;
+        int windowwidth = frameWidth;
+#if WINDOWS
+    if (windowheight <= Console.LargestWindowHeight && windowwidth <= Console.LargestWindowWidth)
+    {
+        Console.SetBufferSize(windowwidth, windowheight);
+        Console.SetWindowSize(windowwidth, windowheight);
+    }
+#endif
+    }
 
-        static void Keret(int width, int height)
+    static void Keret(int width, int height)
         {
             Console.SetCursorPosition(0, 0);
             Console.Write("┌" + new string('─', width - 2) + "┐");
@@ -181,6 +224,7 @@ namespace Console_Drawing
             {
                 savedWorks.Add(drawingData);
                 workCounter++;
+                SaveDrawingToDatabase(drawingData); // Save to database
                 Console.WriteLine($"Munka mentve! [{workCounter}]");
             }
             else
@@ -221,7 +265,7 @@ namespace Console_Drawing
                         Console.ForegroundColor = ConsoleColor.White;
                     }
 
-                    Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                    Console.WriteLine($"Munka {i + 1}");
                 }
 
                 Console.ResetColor();
@@ -238,7 +282,7 @@ namespace Console_Drawing
                         break;
                     case ConsoleKey.Enter:
                         string selectedDrawing = savedWorks[selectedWorkIndex];
-                        currentEditingIndex = selectedWorkIndex; 
+                        currentEditingIndex = selectedWorkIndex;
                         ContinueDrawing(selectedDrawing);
                         editing = false;
                         break;
@@ -316,6 +360,8 @@ namespace Console_Drawing
                 switch (keyinfo.Key)
                 {
                     case ConsoleKey.Escape:
+
+                        SaveDrawingToDatabase(currentDrawing.ToString());
                         SaveDrawing(currentDrawing.ToString());
                         drawing = false;
                         break;
@@ -336,6 +382,7 @@ namespace Console_Drawing
                         Console.ForegroundColor = selectedColor;
                         Console.Write(selectedChar);
                         Console.ResetColor();
+
                         currentDrawing.Append($"[{cursorX},{cursorY},{selectedChar}]");
                         break;
                 }
@@ -374,7 +421,7 @@ namespace Console_Drawing
                         Console.ForegroundColor = ConsoleColor.White;
                     }
 
-                    Console.WriteLine($"[{i + 1}] Munka {i + 1}");
+                    Console.WriteLine($"Munka {i + 1}");
                 }
                 Console.ResetColor();
                 Console.WriteLine("[ESC] Vissza");
@@ -406,6 +453,7 @@ namespace Console_Drawing
             int currentSelection = 1;
             int previousSelection = -1;
 
+            LoadDrawingsFromDatabase(); 
             DrawMenu(currentSelection);
 
             while (true)
@@ -439,4 +487,3 @@ namespace Console_Drawing
             }
         }
     }
-}
