@@ -12,6 +12,7 @@ internal class Program
         static List<string> savedWorks = new List<string>();
         static int workCounter = 0;
         static int currentEditingIndex = -1;
+<<<<<<< HEAD
     static void LoadDrawingsFromDatabase()
     {
         using (var context = new DrawingContext())
@@ -32,12 +33,21 @@ internal class Program
             if (drawing != null)
             {
                 ContinueDrawing(drawing.Data);
+=======
+        static void LoadDrawingFromFile(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                string drawingData = File.ReadAllText(fileName);
+                ContinueDrawing(drawingData);
+>>>>>>> 10214bc015798130ddcf02e84575f36e35959a01
             }
             else
             {
                 Console.WriteLine("A megadott fájl nem található.");
             }
         }
+<<<<<<< HEAD
     }
     static void SaveDrawingToDatabase(string drawingData)
         {
@@ -53,6 +63,24 @@ internal class Program
                 Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Id}");
             }
         }
+=======
+        static void SaveDrawingToFile(string drawingData)
+        {
+            string fileName = $"rajz_{workCounter + 1}.txt";
+            var lines = drawingData.Split(']');
+            StringBuilder formattedDrawing = new StringBuilder();
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrEmpty(line.Trim()))  
+                {
+                    formattedDrawing.AppendLine(line.Trim() + "]");  
+                }
+            }
+            File.WriteAllText(fileName, formattedDrawing.ToString());
+            Console.WriteLine($"Rajz mentve: {fileName}");
+        }
+
+>>>>>>> 10214bc015798130ddcf02e84575f36e35959a01
         static void DrawMenu(int selected)
         {
             string[] options = { "Létrehozás", "Szerkesztés", "Törlés", "Kilépés" };
@@ -361,7 +389,11 @@ internal class Program
                 {
                     case ConsoleKey.Escape:
 
+<<<<<<< HEAD
                         SaveDrawingToDatabase(currentDrawing.ToString());
+=======
+                        SaveDrawingToFile(currentDrawing.ToString());
+>>>>>>> 10214bc015798130ddcf02e84575f36e35959a01
                         SaveDrawing(currentDrawing.ToString());
                         drawing = false;
                         break;
