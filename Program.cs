@@ -239,7 +239,7 @@ internal class Program
         {
             savedWorks.Add(drawingData);
             workCounter++;
-            SaveDrawingToDatabase(drawingData); // Save to database
+            SaveDrawingToDatabase(drawingData); 
             Console.WriteLine($"Munka mentve! [{workCounter}]");
         }
         else
@@ -507,4 +507,3 @@ internal class Program
         }
     }
 }
- 
