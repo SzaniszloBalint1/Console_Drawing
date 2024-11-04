@@ -9,5 +9,8 @@ public class Drawing
     public string Data { get; set; }
 
     [Required]
+    [StringLength(100)]
+    public string Name { get; set; }
+    [Required]
     public DateTime CreatedAt { get; set; }
 }
