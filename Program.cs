@@ -5,8 +5,23 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using static System.Console;
+using Newtonsoft.Json;
+
 internal class Program
 {
+    static string SerializeDrawingData(List<PositionData> drawingData)
+    {
+        return JsonConvert.SerializeObject(drawingData);
+    }
+
+    public class PositionData
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+    public char Character { get; set; }
+    public string Color { get; set; }
+}
+
     static char selectedChar = '█';
     static ConsoleColor selectedColor = ConsoleColor.White;
     static List<string> savedWorks = new List<string>();
@@ -21,6 +36,7 @@ internal class Program
             foreach (var drawing in drawings)
             {
                 Console.WriteLine($"Rajz {drawing.Id}: {drawing.CreatedAt}");
+                Console.WriteLine($"Adatok: {drawing.Data}");
             }
         }
     }
@@ -42,14 +58,22 @@ internal class Program
     {
         using (var context = new DrawingContext())
         {
-            var drawing = new Drawing
+            var existingDrawing = context.Drawings.FirstOrDefault(d => d.Data == drawingData);
+            if (existingDrawing == null)
             {
-                Data = drawingData,
-                CreatedAt = DateTime.Now
-            };
-            context.Drawings.Add(drawing);
-            context.SaveChanges();
-            Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Id}");
+                var drawing = new Drawing
+                {
+                    Data = drawingData,
+                    CreatedAt = DateTime.Now
+                };
+                context.Drawings.Add(drawing);
+                context.SaveChanges();
+                Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Id}");
+            }
+            else
+            {
+                Console.WriteLine("Ez a rajz már létezik az adatbázisban.");
+            }
         }
     }
 
@@ -329,7 +353,6 @@ internal class Program
         Console.SetCursorPosition(textX, y);
         Console.Write(text);
     }
-
     static void ContinueDrawing(string drawingData)
     {
         Console.Clear();
@@ -354,7 +377,6 @@ internal class Program
 
         DrawInConsole();
     }
-
     static void DrawInConsole(int cursorX = -1, int cursorY = -1)
     {
         if (cursorX == -1 || cursorY == -1)
@@ -366,6 +388,7 @@ internal class Program
         Console.CursorVisible = false;
         bool drawing = true;
         StringBuilder currentDrawing = new StringBuilder();
+
 
         while (drawing)
         {
@@ -440,6 +463,7 @@ internal class Program
 
                 Console.WriteLine($"Munka {i + 1}");
             }
+
             Console.ResetColor();
             Console.WriteLine("[ESC] Vissza");
 
@@ -453,13 +477,32 @@ internal class Program
                     selectedWorkIndex = (selectedWorkIndex + 1) % savedWorks.Count;
                     break;
                 case ConsoleKey.Enter:
+                    string selectedDrawing = savedWorks[selectedWorkIndex];
+                    DeleteDrawingFromDatabase(selectedDrawing);
                     savedWorks.RemoveAt(selectedWorkIndex);
-                    Console.WriteLine($"Munka {selectedWorkIndex + 1} törölve.");
+                    Console.WriteLine($"Munka törölve! [{selectedWorkIndex + 1}]");
                     deleting = false;
                     break;
                 case ConsoleKey.Escape:
                     deleting = false;
                     break;
+            }
+        }
+    }
+    static void DeleteDrawingFromDatabase(string drawingData)
+    {
+        using (var context = new DrawingContext())
+        {
+            var drawing = context.Drawings.FirstOrDefault(d => d.Data == drawingData);
+            if (drawing != null)
+            {
+                context.Drawings.Remove(drawing);
+                context.SaveChanges();
+                Console.WriteLine($"Rajz törölve az adatbázisból: {drawing.Id}");
+            }
+            else
+            {
+                Console.WriteLine("A rajz nem található az adatbázisban.");
             }
         }
     }
@@ -470,7 +513,6 @@ internal class Program
         int currentSelection = 1;
         int previousSelection = -1;
 
-        LoadDrawingsFromDatabase();
         DrawMenu(currentSelection);
 
         while (true)
