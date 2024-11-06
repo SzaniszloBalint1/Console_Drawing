@@ -101,7 +101,35 @@ internal class Program
         Console.WriteLine();
         Console.ResetColor();
     }
+    static string GetDrawingName()
+    {
+        Console.WriteLine("Add meg a rajz nevét:");
+        string? drawingName = Console.ReadLine();
+        return drawingName ?? string.Empty;
+    }
+    static void DeleteDrawingFromDatabase(string drawingData)
+    {
+        using (var context = new DrawingContext())
+        {
+            var drawing = context.Drawings.FirstOrDefault(d => d.Data == drawingData);
+            if (drawing != null)
+            {
 
+                string drawingName = drawing.Name;
+                context.Drawings.Remove(drawing);
+                context.SaveChanges();
+                Console.WriteLine($"Rajz törölve az adatbázisból: {drawingName}");
+
+        
+                Console.WriteLine($"Rajz törölve az adatbázisból: {drawing.Id}");
+
+            }
+            else
+            {
+                Console.WriteLine("A rajz nem található az adatbázisban.");
+            }
+        }
+    }
     static void UpdateMenuSelection(int previous, int current)
     {
         string[] options = { "Létrehozás", "Szerkesztés", "Törlés", "Kilépés" };
