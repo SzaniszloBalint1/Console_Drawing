@@ -9,23 +9,6 @@ using Newtonsoft.Json;
 
 internal class Program
 {
-    static string SerializeDrawingData(List<PositionData> drawingData)
-    {
-        return JsonConvert.SerializeObject(drawingData);
-    }
-
-    public class PositionData
-{
-    public int X { get; set; }
-    public int Y { get; set; }
-    public char Character { get; set; }
-
-    public string Color { get; set; } = string.Empty;
-    }
-
-
-
-
     static char selectedChar = '█';
     static ConsoleColor selectedColor = ConsoleColor.White;
     static List<string> savedWorks = new List<string>();
@@ -62,27 +45,27 @@ internal class Program
     {
         using (var context = new DrawingContext())
         {
-            var existingDrawing = context.Drawings.FirstOrDefault(d => d.Data == drawingData);
-            if (existingDrawing == null)
+            var drawing = new Drawing
             {
-                var drawing = new Drawing
-                {
-                    Data = drawingData,
+                Data = drawingData,
+                CreatedAt = DateTime.Now
+            };
+            context.Drawings.Add(drawing);
+            context.SaveChanges();
+            Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Id}");
+        }
+    }
 
-                    CreatedAt = DateTime.Now,
-                    Name = drawingName 
-                };
-                context.Drawings.Add(drawing);
-                context.SaveChanges();
-                Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Name}"); 
-
-             
-                Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Id}");
-
-            }
-            else
+    static void SaveDrawingToFile(string drawingData)
+    {
+        string fileName = $"rajz_{workCounter + 1}.txt";
+        var lines = drawingData.Split(']');
+        StringBuilder formattedDrawing = new StringBuilder();
+        foreach (var line in lines)
+        {
+            if (!string.IsNullOrEmpty(line.Trim()))
             {
-                Console.WriteLine("Ez a rajz már létezik az adatbázisban.");
+                formattedDrawing.AppendLine(line.Trim() + "]");
             }
         }
     }
@@ -373,15 +356,6 @@ internal class Program
         DrawInConsole();
     }
 
-
-    static string GetDrawingName()
-    {
-        Console.WriteLine("Add meg a rajz nevét:");
-        string? drawingName = Console.ReadLine();
-        return drawingName ?? string.Empty;
-    }
-
-
     static void DrawInConsole(int cursorX = -1, int cursorY = -1)
     {
         if (cursorX == -1 || cursorY == -1)
@@ -495,30 +469,6 @@ internal class Program
                 case ConsoleKey.Escape:
                     deleting = false;
                     break;
-            }
-        }
-    }
-    static void DeleteDrawingFromDatabase(string drawingData)
-    {
-        using (var context = new DrawingContext())
-        {
-            var drawing = context.Drawings.FirstOrDefault(d => d.Data == drawingData);
-            if (drawing != null)
-            {
-
-                string drawingName = drawing.Name;
-                context.Drawings.Remove(drawing);
-                context.SaveChanges();
-                Console.WriteLine($"Rajz törölve az adatbázisból: {drawingName}");
-
-                context.Drawings.Remove(drawing);
-                context.SaveChanges();
-                Console.WriteLine($"Rajz törölve az adatbázisból: {drawing.Id}");
-
-            }
-            else
-            {
-                Console.WriteLine("A rajz nem található az adatbázisban.");
             }
         }
     }
