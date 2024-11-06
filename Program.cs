@@ -19,8 +19,13 @@ internal class Program
     public int X { get; set; }
     public int Y { get; set; }
     public char Character { get; set; }
+<<<<<<< HEAD
     public string Color { get; set; } = string.Empty;
     }
+=======
+    public string Color { get; set; }
+}
+>>>>>>> 7a6fa6f4c35a9f02cf4c980d5073ce64cfe41515
 
     static char selectedChar = '█';
     static ConsoleColor selectedColor = ConsoleColor.White;
@@ -64,12 +69,20 @@ internal class Program
                 var drawing = new Drawing
                 {
                     Data = drawingData,
+<<<<<<< HEAD
                     CreatedAt = DateTime.Now,
                     Name = drawingName 
                 };
                 context.Drawings.Add(drawing);
                 context.SaveChanges();
                 Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Name}"); 
+=======
+                    CreatedAt = DateTime.Now
+                };
+                context.Drawings.Add(drawing);
+                context.SaveChanges();
+                Console.WriteLine($"Rajz mentve az adatbázisba: {drawing.Id}");
+>>>>>>> 7a6fa6f4c35a9f02cf4c980d5073ce64cfe41515
             }
             else
             {
@@ -363,6 +376,7 @@ internal class Program
 
         DrawInConsole();
     }
+<<<<<<< HEAD
 
     static string GetDrawingName()
     {
@@ -371,6 +385,8 @@ internal class Program
         return drawingName ?? string.Empty;
     }
 
+=======
+>>>>>>> 7a6fa6f4c35a9f02cf4c980d5073ce64cfe41515
     static void DrawInConsole(int cursorX = -1, int cursorY = -1)
     {
         if (cursorX == -1 || cursorY == -1)
@@ -383,6 +399,7 @@ internal class Program
         Console.CursorVisible = false;
         bool drawing = true;
         StringBuilder currentDrawing = new StringBuilder();
+
 
         while (drawing)
         {
@@ -493,10 +510,16 @@ internal class Program
             var drawing = context.Drawings.FirstOrDefault(d => d.Data == drawingData);
             if (drawing != null)
             {
+<<<<<<< HEAD
                 string drawingName = drawing.Name;
                 context.Drawings.Remove(drawing);
                 context.SaveChanges();
                 Console.WriteLine($"Rajz törölve az adatbázisból: {drawingName}");
+=======
+                context.Drawings.Remove(drawing);
+                context.SaveChanges();
+                Console.WriteLine($"Rajz törölve az adatbázisból: {drawing.Id}");
+>>>>>>> 7a6fa6f4c35a9f02cf4c980d5073ce64cfe41515
             }
             else
             {
